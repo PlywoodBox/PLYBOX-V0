@@ -529,7 +529,7 @@ function updateCameraView() {
   controls.object = currentCamera;
   controls.update();
 }
-const controls = new OrbitControls(perspectiveCamera, renderer.domElement);
+const controls = new OrbitControls(currentCamera, renderer.domElement);
 // Check if controls are properly initialized
 if (controls) {
     controls.enableDamping = true; // enable damping (inertia) for smoother controls
