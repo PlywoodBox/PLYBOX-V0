@@ -39,9 +39,6 @@ controls.screenSpacePanning = false;
 controls.minDistance = 1;
 controls.maxDistance = 500;
 
-// Prevent default right-click context menu
-renderer.domElement.addEventListener('contextmenu', event => event.preventDefault());
-
 const floorGeometry = new THREE.PlaneGeometry(20, 20);
 const floorMaterial = new THREE.ShadowMaterial({
   opacity: 0.1
