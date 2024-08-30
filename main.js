@@ -465,9 +465,6 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
   return group;
 }
 
-
-
-
 const gui = new GUI();
 gui.add(cubeProperties, 'opacity', 0, 1).name('Transparency').onChange(updateCubeGeometry);
 gui.add(dimensions, 'width').name('Width (m)').listen();
@@ -482,7 +479,6 @@ gui.add(cubeProperties, 'bottomPanelVisible').name('Bottom On/Off').onChange(upd
 gui.add(cubeProperties, 'leftPanelVisible').name('Left On/Off').onChange(updateCubeGeometry);
 gui.add(cubeProperties, 'rightPanelVisible').name('Right On/Off').onChange(updateCubeGeometry);
 gui.add(cubeProperties, 'showHorizontalPanels').name('Shelves On/Off').onChange(updateCubeGeometry);
-
 
 gui.add(cubeProperties, 'cubeWidth', 0.01, 2.4, 0.01).name('Cube Width (m)').onChange(updateCubeGeometry);
 gui.add(cubeProperties, 'cubeHeight', 0.01, 2.4, 0.01).name('Cube Height (m)').onChange(updateCubeGeometry);
@@ -524,12 +520,23 @@ function updateCameraView() {
   }
 
   // Sync camera position and rotation
-  currentCamera.position.copy(perspectiveCamera.position);
-  currentCamera.rotation.copy(perspectiveCamera.rotation);
-  controls.object = currentCamera;
-  controls.update();
+  if (currentCamera && perspectiveCamera) {
+    currentCamera.position.copy(perspectiveCamera.position);
+    currentCamera.rotation.copy(perspectiveCamera.rotation);
+  } else {
+    console.error("Error: currentCamera or perspectiveCamera is not initialized.");
+  }
+
+  if (controls) {
+    controls.object = currentCamera;
+    controls.update();
+  } else {
+    console.error("Error: controls are not properly initialized.");
+  }
 }
+
 const controls = new OrbitControls(currentCamera, renderer.domElement);
+
 // Check if controls are properly initialized
 if (controls) {
     controls.enableDamping = true; // enable damping (inertia) for smoother controls
@@ -546,7 +553,11 @@ if (controls) {
 // Animation loop
 function animate() {
   requestAnimationFrame(animate);
-  controls.update();
+  if (controls) {
+    controls.update();
+  } else {
+    console.error("Error: controls are not properly initialized in the animation loop.");
+  }
   renderer.render(scene, currentCamera);
 }
 
