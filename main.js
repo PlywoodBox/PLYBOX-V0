@@ -3,7 +3,6 @@ import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/exampl
 import { GUI } from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.module.js';
 
 const scene = new THREE.Scene();
-
 // Create both cameras
 const aspect = window.innerWidth / window.innerHeight;
 const perspectiveCamera = new THREE.PerspectiveCamera(70, aspect, 0.1, 1000);
@@ -31,6 +30,20 @@ renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
 document.body.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(currentCamera, renderer.domElement);
+// Check if controls are properly initialized
+if (controls) {
+    controls.enableDamping = true; // enable damping (inertia) for smoother controls
+    controls.dampingFactor = 0.25; // set damping factor (adjust this value to your preference)
+    controls.screenSpacePanning = false; // if false, pan orthogonal to world-space direction camera.up
+    controls.minDistance = 1; // minimum zoom distance
+    controls.maxDistance = 500; // maximum zoom distance
+
+    console.log("Controls initialized: ", controls);
+} else {
+    console.error("Controls failed to initialize.");
+}
 
 const floorGeometry = new THREE.PlaneGeometry(20, 20);
 const floorMaterial = new THREE.ShadowMaterial({
@@ -533,21 +546,6 @@ function updateCameraView() {
   } else {
     console.error("Error: controls are not properly initialized.");
   }
-}
-
-const controls = new OrbitControls(currentCamera, renderer.domElement);
-
-// Check if controls are properly initialized
-if (controls) {
-    controls.enableDamping = true; // enable damping (inertia) for smoother controls
-    controls.dampingFactor = 0.25; // set damping factor (adjust this value to your preference)
-    controls.screenSpacePanning = false; // if false, pan orthogonal to world-space direction camera.up
-    controls.minDistance = 1; // minimum zoom distance
-    controls.maxDistance = 500; // maximum zoom distance
-
-    console.log("Controls initialized: ", controls);
-} else {
-    console.error("Controls failed to initialize.");
 }
 
 // Animation loop
