@@ -1,10 +1,6 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.127.0/build/three.module.js';
-import {
-  OrbitControls
-} from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/OrbitControls.js';
-import {
-  GUI
-} from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.module.js';
+import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.127.0/examples/jsm/controls/OrbitControls.js';
+import { GUI } from 'https://cdn.jsdelivr.net/npm/dat.gui@0.7.7/build/dat.gui.module.js';
 
 const scene = new THREE.Scene();
 
@@ -14,7 +10,7 @@ const perspectiveCamera = new THREE.PerspectiveCamera(70, aspect, 0.1, 1000);
 const orthographicCamera = new THREE.OrthographicCamera(-aspect, aspect, 1, -1, 0.1, 1000);
 
 // Define a common start position for both cameras
-const startPosition = new THREE.Vector3(0, 0, 2); // Start position for both cameras
+const startPosition = new THREE.Vector3(0, 0.5, 1.5); // Start position for both cameras
 const startRotation = new THREE.Euler(0, 0, 0); // Common initial rotation
 
 // Set the initial camera
@@ -29,7 +25,7 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true
 });
-renderer.setClearColor(0x000000, 0);
+renderer.setClearColor(0xffffff, 0.8); // White background with full opacity
 renderer.setSize(window.innerWidth, window.innerHeight);
 
 renderer.shadowMap.enabled = true;
@@ -71,8 +67,8 @@ let viewProperties = {
 let cubeProperties = {
   transparency: true,
   opacity: 1,
-  thickness: 0.012,
-  cubeWidth: 0.6,
+  thickness: 0.018,
+  cubeWidth: 0.4,
   cubeHeight: 0.4,
   cubeDepth: 0.4,
   frontPanelVisible: true,
@@ -82,7 +78,7 @@ let cubeProperties = {
   topPanelVisible: true,
   bottomPanelVisible: true,
   showHorizontalPanels: true,
-  selectedTexture: 'Grey Lamination',
+  selectedTexture: 'Red Lamination',
 };
 
 let dimensions = {
@@ -116,7 +112,9 @@ function resetCamera() {
   // Calculate bounding box center and distance based on geometry dimensions
   const center = new THREE.Vector3(0, dimensions.height / 2, 0); // Center of the geometry
   const maxDimension = Math.max(dimensions.width, dimensions.height, dimensions.depth); // Get the largest dimension
-  const distanceFactor = 2; // Factor to move the camera back (adjust to fit the entire object)
+  // Adjust the distance factor based on the geometry width to avoid going too far
+  const widthFactor = Math.min(1, dimensions.width / dimensions.height); // Limit width contribution
+  const distanceFactor = 1 + widthFactor / 2; // Base distance factor with smaller width contribution
 
   // Calculate target position based on geometry size and aspect ratio
   const targetPos = new THREE.Vector3(center.x, center.y, maxDimension * distanceFactor);
@@ -212,7 +210,7 @@ function updateCubeGeometry() {
   for (let x = 0; x < numSectionsX; x++) {
     for (let z = 0; z < numSectionsZ; z++) {
       for (let y = 0; y < numSectionsY; y++) {
-        const offsetX = x * sectionSizeX;
+        const offsetX = (x * sectionSizeX) - (dimensions.width / 2);
         const offsetY = y * sectionSizeY;
         const offsetZ = z * sectionSizeZ;
         const mesh = createSectionMesh(cubeProperties.cubeWidth, cubeProperties.cubeHeight, cubeProperties.cubeDepth, offsetX, offsetY, offsetZ);
@@ -294,7 +292,7 @@ const rotatedEndGrainTexture = textureLoader.load(
 );
 
 let laminatedMaterial = new THREE.MeshStandardMaterial({
-  map: greyLaminatedTexture,
+  map: redLaminatedTexture,
   transparent: cubeProperties.transparency,
   opacity: cubeProperties.opacity,
   roughness: 0.5,
@@ -329,27 +327,21 @@ function updateLaminatedMaterial() {
   switch (cubeProperties.selectedTexture) {
     case 'Grey Lamination':
       laminatedMaterial.map = greyLaminatedTexture;
-      cylinderMaterial.map = greyLaminatedTexture; // Update cylinder material
       break;
     case 'White Lamination':
       laminatedMaterial.map = whiteLaminatedTexture;
-      cylinderMaterial.map = whiteLaminatedTexture; // Update cylinder material
       break;
     case 'Yellow Lamination':
       laminatedMaterial.map = yellowLaminatedTexture;
-      cylinderMaterial.map = yellowLaminatedTexture; // Update cylinder material
       break;
     case 'Natural Finish':
       laminatedMaterial.map = naturalFinishTexture;
-      cylinderMaterial.map = naturalFinishTexture; // Update cylinder material
       break;
     case 'Red Lamination':
       laminatedMaterial.map = redLaminatedTexture;
-      cylinderMaterial.map = redLaminatedTexture; // Update cylinder material
       break;
     case 'Blue Lamination':
       laminatedMaterial.map = blueLaminatedTexture;
-      cylinderMaterial.map = blueLaminatedTexture; // Update cylinder material
       break;
   }
   laminatedMaterial.needsUpdate = true;
@@ -419,10 +411,11 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
   // Calculate the number of middle panels along the width
   const availableWidth = width - 2 * thickness; // Available width after edge offsets
   const numMiddlePanelX = Math.floor(availableWidth / 0.5) + 2; // At least 1 middle panel, add more if needed
-
+  const numMiddlePanelZ = Math.floor(depth / 0.5) + 2; // At least 1 middle panel, add more if needed
   // Middle Panels
   const middlePanelDepth = depth - cubeProperties.thickness;
   const middlePanelWidth = availableWidth / (numMiddlePanelX - 1);
+  const middlePanelZ = depth / (numMiddlePanelZ - 1);
 
   for (let i = 1; i < numMiddlePanelX - 1; i++) {
     const middlePanelGeometry = new THREE.BoxGeometry(thickness, sidePanelHeight, middlePanelDepth);
@@ -505,19 +498,30 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
   // Add Cylinders with updated material based on selected lamination
   const cylinderRadius = 0.015; // 15mm radius
   const cylinderHeight = spacing.cubeSpacing; // Already in meters
+  const edgeOffsetX = 0.04; // 40mm offset in meters
+  const edgeOffsetZ = 0.04; // 40mm offset converted to meters
   const numCylindersX = Math.floor(availableWidth / 0.5) + 2;
+  const numCylindersZ = Math.floor(depth / 0.5) + 2;
 
   const cylinderGeometry = new THREE.CylinderGeometry(cylinderRadius, cylinderRadius, cylinderHeight, 32);
-
-  const numCylindersZ = 2; // Place two cylinders along the depth
-  const edgeOffset = 0.04; // 40mm offset converted to meters
 
   for (let i = 0; i < numCylindersX; i++) {
     for (let j = 0; j < numCylindersZ; j++) {
       const cylinder = new THREE.Mesh(cylinderGeometry, cylinderMaterial);
 
-      const posX = -availableWidth / 2 + i * middlePanelWidth;
-      const posZ = -depth / 2 + edgeOffset + j * (depth - 2 * edgeOffset);
+      let posX = -availableWidth / 2 + i * middlePanelWidth;
+      if (i === 0) {
+        posX += edgeOffsetX; // Apply offset only to the first cylinder
+      } else if (i === numCylindersX - 1) {
+        posX -= edgeOffsetX; // Apply offset only to the last cylinder
+      }
+      let posZ = -depth / 2 + j * middlePanelZ;
+      if (j === 0) {
+        posZ += edgeOffsetZ; // Apply offset to the first cylinder
+      } else if (j === numCylindersZ - 1) {
+        posZ -= edgeOffsetZ; // Apply offset to the last cylinder
+      }
+
       const posY = -height / 2 - cylinderHeight / 2;
 
       cylinder.position.set(posX, posY, posZ);
@@ -538,6 +542,8 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
 
 // Orbit Controls and Animation Loop
 const controls = new OrbitControls(currentCamera, renderer.domElement);
+controls.enableDamping = true;  // enables inertial damping
+controls.dampingFactor = 0.05;  // sets the damping factor
 controls.maxPolarAngle = Math.PI / 2; // No downward rotation beyond horizontal view
 controls.minDistance = 1; // Minimum zoom distance
 controls.maxDistance = 6; // Maximum zoom distance
@@ -552,13 +558,12 @@ animate();
 updateCubeGeometry();
 
 
-const gui = new dat.GUI();
+const gui = new GUI();
 
 const cameraFolder = gui.addFolder('Camera');
 cameraFolder.add({
   resetCamera: () => resetCamera()
 }, 'resetCamera').name('Reset Camera');
-cameraFolder.add(viewProperties, 'perspectiveView').name('Perspective View').onChange(updateCameraView);
 cameraFolder.open(); // Automatically open the folder
 
 const overallFolder = gui.addFolder('Overall Size');
@@ -578,31 +583,56 @@ cubeFolder.add(cubeProperties, 'thickness', 0.012, 0.03) // Slider between 12mm 
     cubeProperties.thickness = closestAllowedThickness(value); // Snap to closest allowed thickness
     updateCubeGeometry();
   });
-cubeFolder.add(spacing, 'cubeSpacing', 0, 0.1, 0.001).name('Cube Spacing (m)').onChange(updateCubeGeometry);
-cubeFolder.add(spacing, 'frontPanelGap', 0, 0.05, 0.001).name('Front Panel Gap (m)').onChange(updateCubeGeometry);
 cubeFolder.open(); // Automatically open the folder
 
 const visibilityFolder = gui.addFolder('Visibility');
-visibilityFolder.add(cubeProperties, 'opacity', 0, 1).name('Transparency').onChange(updateCubeGeometry);
 visibilityFolder.add(cubeProperties, 'frontPanelVisible').name('Front On/Off').onChange(updateCubeGeometry);
 visibilityFolder.add(cubeProperties, 'backPanelVisible').name('Back On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'topPanelVisible').name('Top On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'bottomPanelVisible').name('Bottom On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'leftPanelVisible').name('Left On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'rightPanelVisible').name('Right On/Off').onChange(updateCubeGeometry);
 visibilityFolder.add(cubeProperties, 'showHorizontalPanels').name('Shelves On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(panelProperties, 'showLargePanel').name('Wall On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(panelProperties, 'showFloorPanel').name('Floor On/Off').onChange(updateCubeGeometry);
 visibilityFolder.open(); // Automatically open the folder
 
 const repetitionFolder = gui.addFolder('Repetition');
 repetitionFolder.add(numCubes, 'numCubesX', 1, 10, 1).name('Number of Cubes X').onChange(updateCubeGeometry);
 repetitionFolder.add(numCubes, 'numCubesY', 1, 10, 1).name('Number of Cubes Y').onChange(updateCubeGeometry);
 repetitionFolder.add(numCubes, 'numCubesZ', 1, 2, 1).name('Number of Cubes Z').onChange(updateCubeGeometry);
-repetitionFolder.close(); // Automatically open the folder
+repetitionFolder.open(); // Automatically open the folder
 
 const textureFolder = gui.addFolder('Texture Selection');
-textureFolder.add(cubeProperties, 'selectedTexture', ['White Lamination', 'Yellow Lamination', 'Grey Lamination', 'Natural Finish', 'Red Lamination', 'Blue Lamination'])
-  .name('Lamination Texture')
-  .onChange(updateLaminatedMaterial);
-textureFolder.open();
+
+// Create a container for the lamination checkboxes
+const laminationContainer = document.createElement('div');
+laminationContainer.classList.add('cr'); // Class to match the visibility section
+
+// Add a label to the left side
+const laminationLabel = document.createElement('span');
+laminationLabel.textContent = 'Lamination';
+laminationLabel.classList.add('lamination-label'); // Apply label styling
+laminationContainer.appendChild(laminationLabel);
+
+// Colors for each checkbox option
+const laminationOptions = ['Grey', 'White', 'Yellow', 'Natural', 'Red', 'Blue'];
+const colors = ['#888888', '#ffffff', '#ffd700', '#8B4513', '#ff0000', '#0000ff'];
+
+laminationOptions.forEach((option, index) => {
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.classList.add('lamination-checkbox');
+  checkbox.style.backgroundColor = colors[index]; // Set the checkbox color
+
+  checkbox.addEventListener('change', function() {
+    // Only one checkbox should be selected at a time
+    document.querySelectorAll('.lamination-checkbox').forEach(cb => cb.checked = false);
+    checkbox.checked = true;
+
+    // Update the selected texture in the cube properties
+    cubeProperties.selectedTexture = option === 'Natural' ? 'Natural Finish' : `${option} Lamination`;
+
+    updateLaminatedMaterial();
+  });
+
+  laminationContainer.appendChild(checkbox);
+});
+
+
+// Add the container to the texture folder
+textureFolder.__ul.appendChild(laminationContainer);
