@@ -564,13 +564,13 @@ const cameraFolder = gui.addFolder('Camera');
 cameraFolder.add({
   resetCamera: () => resetCamera()
 }, 'resetCamera').name('Reset Camera');
-cameraFolder.open(); // Automatically open the folder
+cameraFolder.close(); // Automatically open the folder
 
 const overallFolder = gui.addFolder('Overall Size');
 overallFolder.add(dimensions, 'width').name('Width (m)').listen();
 overallFolder.add(dimensions, 'height').name('Height (m)').listen();
 overallFolder.add(dimensions, 'depth').name('Depth (m)').listen();
-overallFolder.open(); // Automatically open the folder
+overallFolder.close(); // Automatically open the folder
 
 const cubeFolder = gui.addFolder('Cube Properties');
 cubeFolder.add(cubeProperties, 'cubeWidth', 0.01, 2.4).name('Cube Width (m)').onChange(updateCubeGeometry);
@@ -589,13 +589,13 @@ const visibilityFolder = gui.addFolder('Visibility');
 visibilityFolder.add(cubeProperties, 'frontPanelVisible').name('Front On/Off').onChange(updateCubeGeometry);
 visibilityFolder.add(cubeProperties, 'backPanelVisible').name('Back On/Off').onChange(updateCubeGeometry);
 visibilityFolder.add(cubeProperties, 'showHorizontalPanels').name('Shelves On/Off').onChange(updateCubeGeometry);
-visibilityFolder.open(); // Automatically open the folder
+visibilityFolder.close(); // Automatically open the folder
 
 const repetitionFolder = gui.addFolder('Repetition');
 repetitionFolder.add(numCubes, 'numCubesX', 1, 10, 1).name('Number of Cubes X').onChange(updateCubeGeometry);
 repetitionFolder.add(numCubes, 'numCubesY', 1, 10, 1).name('Number of Cubes Y').onChange(updateCubeGeometry);
 repetitionFolder.add(numCubes, 'numCubesZ', 1, 2, 1).name('Number of Cubes Z').onChange(updateCubeGeometry);
-repetitionFolder.open(); // Automatically open the folder
+repetitionFolder.close(); // Automatically open the folder
 
 const textureFolder = gui.addFolder('Texture Selection');
 
