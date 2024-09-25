@@ -57,7 +57,9 @@ scene.add(directionalLight);
 const allowedThicknesses = [0.012, 0.018, 0.024, 0.03]; // Allowed values in meters
 
 function closestAllowedThickness(value) {
-  return allowedThicknesses.reduce((prev, curr) => Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev);
+  return allowedThicknesses.reduce((prev, curr) =>
+    Math.abs(curr - value) < Math.abs(prev - value) ? curr : prev
+  );
 }
 
 // Cube properties, dimensions, spacing, etc.
@@ -136,7 +138,7 @@ function resetCamera() {
     );
 
     // Update the controls target to the center of the geometry
-    controls.target.lerp(center, t)
+    controls.target.lerp(center, t);
 
     // Update controls for the current frame
     controls.update();
@@ -182,11 +184,14 @@ function updateDimensions() {
   dimensions.height = numCubes.numCubesY * cubeHeight + (numCubes.numCubesY - 1) * cubeSpacing;
   dimensions.depth = numCubes.numCubesZ * cubeDepth + (numCubes.numCubesZ - 1) * cubeSpacing;
 }
+
 let largePanel = null; // Initialize largePanel outside the function
 let floorPanel = null; // Initialize floorPanel outside the function
 
 function updateCubeGeometry() {
-  scene.children = scene.children.filter(child => !child.userData.isCube && child !== largePanel && child !== floorPanel);
+  scene.children = scene.children.filter(
+    (child) => !child.userData.isCube && child !== largePanel && child !== floorPanel
+  );
   updateDimensions();
 
   endGrainMaterial.opacity = cubeProperties.opacity;
@@ -210,10 +215,17 @@ function updateCubeGeometry() {
   for (let x = 0; x < numSectionsX; x++) {
     for (let z = 0; z < numSectionsZ; z++) {
       for (let y = 0; y < numSectionsY; y++) {
-        const offsetX = (x * sectionSizeX) - (dimensions.width / 2);
+        const offsetX = x * sectionSizeX - dimensions.width / 2;
         const offsetY = y * sectionSizeY;
         const offsetZ = z * sectionSizeZ;
-        const mesh = createSectionMesh(cubeProperties.cubeWidth, cubeProperties.cubeHeight, cubeProperties.cubeDepth, offsetX, offsetY, offsetZ);
+        const mesh = createSectionMesh(
+          cubeProperties.cubeWidth,
+          cubeProperties.cubeHeight,
+          cubeProperties.cubeDepth,
+          offsetX,
+          offsetY,
+          offsetZ
+        );
         scene.add(mesh);
       }
     }
@@ -271,25 +283,19 @@ const naturalFinishTexture = textureLoader.load('https://i.imgur.com/P9YMPBs.jpg
 const redLaminatedTexture = textureLoader.load('https://i.imgur.com/30oAplv.jpeg'); // New Red Texture
 const blueLaminatedTexture = textureLoader.load('https://i.imgur.com/AEN7fTa.jpeg'); // New Blue Texture
 
-const endGrainTexture = textureLoader.load(
-  'https://i.imgur.com/azPNWoQ.jpeg',
-  (texture) => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(0.1, 0.1);
-  }
-);
+const endGrainTexture = textureLoader.load('https://i.imgur.com/azPNWoQ.jpeg', (texture) => {
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(0.1, 0.1);
+});
 
-const rotatedEndGrainTexture = textureLoader.load(
-  'https://i.imgur.com/azPNWoQ.jpeg',
-  (texture) => {
-    texture.wrapS = THREE.RepeatWrapping;
-    texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(0.1, 0.1);
-    texture.rotation = Math.PI / 2;
-    texture.center.set(0.5, 0.5);
-  }
-);
+const rotatedEndGrainTexture = textureLoader.load('https://i.imgur.com/azPNWoQ.jpeg', (texture) => {
+  texture.wrapS = THREE.RepeatWrapping;
+  texture.wrapT = THREE.RepeatWrapping;
+  texture.repeat.set(0.1, 0.1);
+  texture.rotation = Math.PI / 2;
+  texture.center.set(0.5, 0.5);
+});
 
 let laminatedMaterial = new THREE.MeshStandardMaterial({
   map: redLaminatedTexture,
@@ -440,7 +446,11 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
       const panelHeight = availableHeight / (numHorizontalPanels - 1);
 
       for (let j = 1; j < numHorizontalPanels - 1; j++) {
-        const horizontalPanelGeometry = new THREE.BoxGeometry(middlePanelWidth - 2 * offset - thickness, thickness, middlePanelDepth);
+        const horizontalPanelGeometry = new THREE.BoxGeometry(
+          middlePanelWidth - 2 * offset - thickness,
+          thickness,
+          middlePanelDepth
+        );
         const horizontalPanel = new THREE.Mesh(horizontalPanelGeometry, topPanelMaterials);
 
         const posY = -availableHeight / 2 + j * panelHeight;
@@ -454,7 +464,7 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
     }
   }
 
-  // Front Panels with offset for the front panel (Rest of your code remains unchanged)
+  // Front Panels with offset for the front panel
   const panelWidthFrontBack = width - 2 * thickness;
   const panelHeightFrontBack = height - 2 * thickness;
   const frontPanelWidthWithOffset = middlePanelWidth - 2 * frontPanelGap - thickness;
@@ -533,7 +543,11 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
   }
 
   // Position the entire group and lift on the Y axis by the value of cubeSpacing
-  group.position.set(offsetX + width / 2, offsetY + height / 2 + spacing.cubeSpacing, offsetZ + depth / 2);
+  group.position.set(
+    offsetX + width / 2,
+    offsetY + height / 2 + spacing.cubeSpacing,
+    offsetZ + depth / 2
+  );
 
   group.userData.isCube = true;
 
@@ -542,8 +556,8 @@ function createSectionMesh(width, height, depth, offsetX, offsetY, offsetZ) {
 
 // Orbit Controls and Animation Loop
 const controls = new OrbitControls(currentCamera, renderer.domElement);
-controls.enableDamping = true;  // enables inertial damping
-controls.dampingFactor = 0.05;  // sets the damping factor
+controls.enableDamping = true; // enables inertial damping
+controls.dampingFactor = 0.05; // sets the damping factor
 controls.maxPolarAngle = Math.PI / 2; // No downward rotation beyond horizontal view
 controls.minDistance = 1; // Minimum zoom distance
 controls.maxDistance = 6; // Maximum zoom distance
@@ -557,26 +571,85 @@ function animate() {
 animate();
 updateCubeGeometry();
 
-
+// Initialize the GUI
 const gui = new GUI();
 
+// Ensure the control panel has the correct classes for CSS
+gui.domElement.classList.add('dg', 'main');
+
+// ---------------------------------------------
+// Add the menu handle to the DOM
+// ---------------------------------------------
+const menuHandle = document.createElement('div');
+menuHandle.classList.add('menu-handle');
+document.body.appendChild(menuHandle);
+
+// ---------------------------------------------
+// Add the event listeners for the control panel
+// ---------------------------------------------
+function setupControlPanel() {
+  // Get the control panel and menu handle elements
+  const controlPanel = document.querySelector('.dg.main');
+  // menuHandle is already defined above
+
+  // Ensure both elements exist
+  if (controlPanel && menuHandle) {
+    // Open the control panel when the handle is clicked
+    menuHandle.addEventListener('click', () => {
+      controlPanel.classList.add('open');
+    });
+
+    // Close the control panel when clicking outside of it
+    document.addEventListener('click', (event) => {
+      if (
+        !controlPanel.contains(event.target) &&
+        !menuHandle.contains(event.target)
+      ) {
+        controlPanel.classList.remove('open');
+      }
+    });
+  } else {
+    // If the control panel is not yet available, wait and try again
+    setTimeout(setupControlPanel, 100); // Retry after 100ms
+  }
+}
+
+// Start the setup process
+setupControlPanel();
+
+// GUI setup code
 const cameraFolder = gui.addFolder('Camera');
-cameraFolder.add({
-  resetCamera: () => resetCamera()
-}, 'resetCamera').name('Reset Camera');
-cameraFolder.close(); // Automatically open the folder
+cameraFolder
+  .add(
+    {
+      resetCamera: () => resetCamera(),
+    },
+    'resetCamera'
+  )
+  .name('Reset Camera');
+cameraFolder.close(); // Automatically close the folder
 
 const overallFolder = gui.addFolder('Overall Size');
 overallFolder.add(dimensions, 'width').name('Width (m)').listen();
 overallFolder.add(dimensions, 'height').name('Height (m)').listen();
 overallFolder.add(dimensions, 'depth').name('Depth (m)').listen();
-overallFolder.close(); // Automatically open the folder
+overallFolder.close(); // Automatically close the folder
 
 const cubeFolder = gui.addFolder('Cube Properties');
-cubeFolder.add(cubeProperties, 'cubeWidth', 0.01, 2.4).name('Cube Width (m)').onChange(updateCubeGeometry);
-cubeFolder.add(cubeProperties, 'cubeHeight', 0.01, 2.4).name('Cube Height (m)').onChange(updateCubeGeometry);
-cubeFolder.add(cubeProperties, 'cubeDepth', 0.01, 2.4).name('Cube Depth (m)').onChange(updateCubeGeometry);
-cubeFolder.add(cubeProperties, 'thickness', 0.012, 0.03) // Slider between 12mm (0.012m) and 30mm (0.03m)
+cubeFolder
+  .add(cubeProperties, 'cubeWidth', 0.01, 2.4)
+  .name('Cube Width (m)')
+  .onChange(updateCubeGeometry);
+cubeFolder
+  .add(cubeProperties, 'cubeHeight', 0.01, 2.4)
+  .name('Cube Height (m)')
+  .onChange(updateCubeGeometry);
+cubeFolder
+  .add(cubeProperties, 'cubeDepth', 0.01, 2.4)
+  .name('Cube Depth (m)')
+  .onChange(updateCubeGeometry);
+cubeFolder
+  .add(cubeProperties, 'thickness', 0.012, 0.03) // Slider between 12mm (0.012m) and 30mm (0.03m)
   .step(0.001) // Small step size to allow smooth sliding
   .name('Thickness (m)')
   .onChange((value) => {
@@ -586,16 +659,34 @@ cubeFolder.add(cubeProperties, 'thickness', 0.012, 0.03) // Slider between 12mm 
 cubeFolder.open(); // Automatically open the folder
 
 const visibilityFolder = gui.addFolder('Visibility');
-visibilityFolder.add(cubeProperties, 'frontPanelVisible').name('Front On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'backPanelVisible').name('Back On/Off').onChange(updateCubeGeometry);
-visibilityFolder.add(cubeProperties, 'showHorizontalPanels').name('Shelves On/Off').onChange(updateCubeGeometry);
-visibilityFolder.close(); // Automatically open the folder
+visibilityFolder
+  .add(cubeProperties, 'frontPanelVisible')
+  .name('Front On/Off')
+  .onChange(updateCubeGeometry);
+visibilityFolder
+  .add(cubeProperties, 'backPanelVisible')
+  .name('Back On/Off')
+  .onChange(updateCubeGeometry);
+visibilityFolder
+  .add(cubeProperties, 'showHorizontalPanels')
+  .name('Shelves On/Off')
+  .onChange(updateCubeGeometry);
+visibilityFolder.close(); // Automatically close the folder
 
 const repetitionFolder = gui.addFolder('Repetition');
-repetitionFolder.add(numCubes, 'numCubesX', 1, 10, 1).name('Number of Cubes X').onChange(updateCubeGeometry);
-repetitionFolder.add(numCubes, 'numCubesY', 1, 10, 1).name('Number of Cubes Y').onChange(updateCubeGeometry);
-repetitionFolder.add(numCubes, 'numCubesZ', 1, 2, 1).name('Number of Cubes Z').onChange(updateCubeGeometry);
-repetitionFolder.close(); // Automatically open the folder
+repetitionFolder
+  .add(numCubes, 'numCubesX', 1, 10, 1)
+  .name('Number of Cubes X')
+  .onChange(updateCubeGeometry);
+repetitionFolder
+  .add(numCubes, 'numCubesY', 1, 10, 1)
+  .name('Number of Cubes Y')
+  .onChange(updateCubeGeometry);
+repetitionFolder
+  .add(numCubes, 'numCubesZ', 1, 2, 1)
+  .name('Number of Cubes Z')
+  .onChange(updateCubeGeometry);
+repetitionFolder.close(); // Automatically close the folder
 
 const textureFolder = gui.addFolder('Texture Selection');
 
@@ -619,9 +710,9 @@ laminationOptions.forEach((option, index) => {
   checkbox.classList.add('lamination-checkbox');
   checkbox.style.backgroundColor = colors[index]; // Set the checkbox color
 
-  checkbox.addEventListener('change', function() {
+  checkbox.addEventListener('change', function () {
     // Only one checkbox should be selected at a time
-    document.querySelectorAll('.lamination-checkbox').forEach(cb => cb.checked = false);
+    document.querySelectorAll('.lamination-checkbox').forEach((cb) => (cb.checked = false));
     checkbox.checked = true;
 
     // Update the selected texture in the cube properties
@@ -632,7 +723,6 @@ laminationOptions.forEach((option, index) => {
 
   laminationContainer.appendChild(checkbox);
 });
-
 
 // Add the container to the texture folder
 textureFolder.__ul.appendChild(laminationContainer);
